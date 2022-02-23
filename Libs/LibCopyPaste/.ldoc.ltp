@@ -1,0 +1,21 @@
+ # $(module.name)
+$(module.summary)
+# for kind,items in module.kinds() do
+ ## $(kind)
+#   for item in items() do
+ ### $(ldoc.display_name(item))
+$(ldoc.descript(item))
+#       if item.params and #item.params > 0 then
+**Parameters**
+#           for p in ldoc.modules.iter(item.params) do
+- $(p): $(item.params.map[p])
+#           end
+#       end
+#       if item.ret and #item.ret > 0 then
+**Returns**
+#           for _, ret in ldoc.modules.iter(item.ret) do
+- $(ret)
+#           end
+#       end
+#   end
+# end

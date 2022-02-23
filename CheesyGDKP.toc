@@ -1,0 +1,8 @@
+## Interface: 38988
+## Version: 1.0.0
+## Title: CheeseyGDKP
+## Notes: Filters our duplicate chat messages
+## Author: Osthyvel-Ashbringer
+
+Libs/LibCopyPaste/LibCopyPaste-1.0.lua
+CheesyGDKP.lua

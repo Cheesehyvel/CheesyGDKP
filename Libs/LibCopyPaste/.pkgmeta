@@ -1,0 +1,7 @@
+package-as: LibCopyPaste-1.0
+
+externals:
+  Libs/LibStub: https://repos.wowace.com/wow/libstub/trunk
+
+ignore:
+  - README.md
