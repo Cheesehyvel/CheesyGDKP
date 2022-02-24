@@ -4,26 +4,30 @@ local function CGAddonCommands(msg)
     DEFAULT_CHAT_FRAME:AddMessage("No commands")
 end
 
+local targetItem, targetMoney = nil, 0
+local playerItem, playerMoney = nil, 0
+local tradeTarget = ""
+local tradeId = 1
+local trades = {}
+
 local f = CreateFrame("Frame")
 f:RegisterEvent("TRADE_SHOW")
---f:RegisterEvent("TRADE_CLOSED")
---f:RegisterEvent("PLAYER_TRADE_MONEY")
 f:RegisterEvent("TRADE_MONEY_CHANGED")
 f:RegisterEvent("TRADE_ACCEPT_UPDATE")
 f:RegisterEvent("TRADE_REQUEST_CANCEL")
 f:RegisterEvent("UI_INFO_MESSAGE")
 f:RegisterEvent("UI_ERROR_MESSAGE")
-local tradeItem, tradeMoney, tradeWho, tradeWhoClass = nil, 0, "", ""
 f:SetScript("OnEvent", function(self, event, ...)
     if (event == "TRADE_SHOW") then
-        tradeWho = UnitName("npc")
-        _, tradeWhoClass = UnitClass("npc")
+        tradeTarget = UnitName("npc")
     elseif (event == "TRADE_MONEY_CHANGED") then
-        tradeMoney = GetTargetTradeMoney()
-        tradeItem = getFirstTradeItem()
+        targetMoney = GetTargetTradeMoney()
+        targetItem = getFirstTargetItem()
+        playerMoney = GetPlayerTradeMoney()
+        playerItem = getFirstPlayerItem()
     elseif (event == "TRADE_ACCEPT_UPDATE") then
-        tradeMoney = GetTargetTradeMoney()
-        tradeItem = getFirstTradeItem()
+        targetMoney = GetTargetTradeMoney()
+        targetItem = getFirstTargetItem()
     elseif (event == "TRADE_REQUEST_CANCEL") then
         resetCurrentTradeData()
     elseif (event == "UI_INFO_MESSAGE" or event == "UI_ERROR_MESSAGE") then
@@ -37,7 +41,18 @@ f:SetScript("OnEvent", function(self, event, ...)
     end
 end)
 
-function getFirstTradeItem()
+function getFirstTargetItem()
+    for id = 1, 6 do
+        item = GetTradeTargetItemLink(id)
+        if item ~= nil and item ~= "" then
+            return item
+        end
+    end
+
+    return nil
+end
+
+function getFirstPlayerItem()
     for id = 1, 6 do
         item = GetTradePlayerItemLink(id)
         if item ~= nil and item ~= "" then
@@ -49,16 +64,33 @@ function getFirstTradeItem()
 end
 
 function resetCurrentTradeData()
-    tradeItem, tradeMoney, tradeWho, tradeWhoClass = nil, 0, "", ""
+    targetItem, targetMoney = nil, 0
+    playerItem, playerMoney = nil, 0
+    tradeTarget = ""
 end
 
 function doTrade()
-    if tradeItem then
-        DEFAULT_CHAT_FRAME:AddMessage("Gave " .. tradeItem .. " |HCGLink:copytrade|hto " .. tradeWho .. "|h")
+    if playerItem then
+        DEFAULT_CHAT_FRAME:AddMessage("Gave " .. playerItem .. " to " .. tradeTarget)
     end
-    if tradeMoney and tradeMoney ~= "0" then
-        DEFAULT_CHAT_FRAME:AddMessage("|HCGLink:copytrade|hReceived " .. GetCoinText(tradeMoney, " ") .. " from " .. tradeWho .. "|h")
+    if targetItem then
+        DEFAULT_CHAT_FRAME:AddMessage("Received " .. targetItem .. " from " .. tradeTarget)
     end
+    if playerMoney and playerMoney ~= 0 then
+        DEFAULT_CHAT_FRAME:AddMessage("Gave " .. playerMoney .. " to " .. tradeTarget)
+    end
+    if targetMoney and targetMoney ~= 0 then
+        DEFAULT_CHAT_FRAME:AddMessage("|HCGLink:copytrade:" .. tradeId .. "|hReceived " .. GetCoinText(targetMoney, " ") .. " from " .. tradeTarget .. "|h")
+    end
+
+    trade = {}
+    trade["target"] = tradeTarget
+    trade["playerItem"] = playerItem
+    trade["targetItem"] = targetItem
+    trade["playerMoney"] = playerMoney
+    trade["targetMoney"] = targetMoney
+    trades[tradeId] = trade
+    tradeId = tradeId+1
 end
 
 function extractItemNameFromChatItemLink(message)
@@ -66,19 +98,28 @@ function extractItemNameFromChatItemLink(message)
     return name
 end
 
-function copyTrade()
-    local itemString = extractItemNameFromChatItemLink(tradeItem)
-    text = itemString .. "\t" .. tradeWho .. "\t" .. string.sub(tradeMoney, 0, -5)
-    LibCopyPaste:Copy("Copy trade", text, {
-        autoHide = 1,
-        readOnly = 1
-    })
+function extractItemIdFromChatItemLink(message)
+    local _, _, id = string.find(message, "HItem:([0-9]+):")
+    return id
+end
+
+function copyTrade(id)
+    trade = trades[id]
+    if trade ~= nil then
+        local itemString = extractItemNameFromChatItemLink(trade["playerItem"])
+        -- text = itemString .. "\t" .. tradeTarget .. "\t" .. string.sub(trade["targetMoney"], 0, -5)
+        text = itemString .. "\t" .. tradeTarget .. "\t" .. trade["targetMoney"]
+        LibCopyPaste:Copy("Copy trade", text, {
+            autoHide = 1,
+            readOnly = 1
+        })
+    end
 end
 
 hooksecurefunc("ChatFrame_OnHyperlinkShow", function(...)
     local chatFrame, link, text, button = ...;
-    if link == "CGLink:copytrade" then
-        copyTrade();
+    if string.sub(link, 0, 16) == "CGLink:copytrade" then
+        copyTrade(tonumber(string.sub(link, 18)));
     end
 end)
 
