@@ -77,7 +77,7 @@ function doTrade()
         DEFAULT_CHAT_FRAME:AddMessage("Received " .. targetItem .. " from " .. tradeTarget)
     end
     if playerMoney and playerMoney ~= 0 then
-        DEFAULT_CHAT_FRAME:AddMessage("Gave " .. playerMoney .. " to " .. tradeTarget)
+        DEFAULT_CHAT_FRAME:AddMessage("Gave " .. GetCoinText(playerMoney, " ") .. " to " .. tradeTarget)
     end
     if targetMoney and targetMoney ~= 0 then
         DEFAULT_CHAT_FRAME:AddMessage("|HCGLink:copytrade:" .. tradeId .. "|hReceived " .. GetCoinText(targetMoney, " ") .. " from " .. tradeTarget .. "|h")
@@ -107,8 +107,7 @@ function copyTrade(id)
     trade = trades[id]
     if trade ~= nil then
         local itemString = extractItemNameFromChatItemLink(trade["playerItem"])
-        -- text = itemString .. "\t" .. tradeTarget .. "\t" .. string.sub(trade["targetMoney"], 0, -5)
-        text = itemString .. "\t" .. tradeTarget .. "\t" .. trade["targetMoney"]
+        text = itemString .. "\t" .. tradeTarget .. "\t" .. string.sub(trade["targetMoney"], 0, -5)
         LibCopyPaste:Copy("Copy trade", text, {
             autoHide = 1,
             readOnly = 1
