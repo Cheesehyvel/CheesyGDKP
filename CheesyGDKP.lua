@@ -28,6 +28,8 @@ f:SetScript("OnEvent", function(self, event, ...)
     elseif (event == "TRADE_ACCEPT_UPDATE") then
         targetMoney = GetTargetTradeMoney()
         targetItem = getFirstTargetItem()
+        playerMoney = GetPlayerTradeMoney()
+        playerItem = getFirstPlayerItem()
     elseif (event == "TRADE_REQUEST_CANCEL") then
         resetCurrentTradeData()
     elseif (event == "UI_INFO_MESSAGE" or event == "UI_ERROR_MESSAGE") then
